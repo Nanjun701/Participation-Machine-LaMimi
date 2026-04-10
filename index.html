@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Last Witness</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="fade-overlay" id="fadeOverlay"></div>
+    <div class="scan-flash" id="scanFlash"></div>
+    <div class="conn-status">
+        <div class="conn-dot" id="connDot"></div>
+        <span id="connText">offline</span>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         01 · INTRO — Title card
+    ══════════════════════════════════════════════ -->
+    <div class="scene active" id="scene-intro">
+        <div class="scene-bg"></div>
+        <div class="intro-content">
+            <div class="game-eyebrow">An Interactive Investigation</div>
+            <h1 class="game-title">The Last<br>Witness</h1>
+            <div class="game-case">Case File &nbsp;·&nbsp; Wentao Street</div>
+            <button class="start-btn" onclick="goToPrelude()">Enter</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         02 · PRELUDE — Background + how to play
+    ══════════════════════════════════════════════ -->
+    <div class="scene" id="scene-prelude">
+        <div class="scene-bg"></div>
+
+        <!-- page container -->
+        <div class="prelude-body">
+            <div class="prelude-page" id="preludePage">
+                <div class="prelude-page-num" id="preludeNum">01 / 03</div>
+                <h2 class="prelude-title" id="preludeTitle"></h2>
+                <p class="prelude-text" id="preludeText"></p>
+            </div>
+            <button class="prelude-btn" id="preludeBtn" onclick="advancePrelude()">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         03 · WHITE ROOM — Interrogation hub
+         States:
+           - Investigator speaks (opening or per-object prompt)
+           - Scan indicator (waiting for NFC / dev click)
+    ══════════════════════════════════════════════ -->
+    <div class="scene" id="scene-investigation">
+        <div class="scene-bg"></div>
+        <div class="investigation-ui">
+
+            <!-- top bar -->
+            <div class="top-bar">
+                <div>
+                    <div class="location-label">Location &nbsp;·&nbsp; The White Room</div>
+                    <div class="case-name">The Last Witness</div>
+                </div>
+                <div class="evidence-tracker" id="evidenceTracker"></div>
+            </div>
+
+            <div class="inv-spacer"></div>
+
+            <!-- investigator dialogue (opening + per-object prompts) -->
+            <div id="invDialogue" class="inv-dialogue hidden">
+                <div class="dialogue-panel" id="invPanel">
+                    <div class="dialogue-speaker" id="invSpeaker"></div>
+                    <div class="dialogue-text" id="invText"></div>
+                    <span class="dialogue-hint" id="invHint">
+                        Click anywhere or press Space ›
+                    </span>
+                </div>
+            </div>
+
+            <!-- scan state: waiting for NFC or dev click -->
+            <div id="scanWait" class="scan-wait hidden">
+                <div class="scan-icon-wrap">
+                    <span class="scan-icon">◈</span>
+                </div>
+                <div class="scan-label">Place the object on the reader</div>
+                <!-- dev mode: shows clickable button for current object -->
+                <button class="dev-trigger hidden" id="devTrigger" onclick="devScanCurrent()"></button>
+                <div class="nfc-status" id="nfcStatus"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         04 · MEMORY SCENES — built by game.js
+         Each scene has phases:
+           memory lines → investigator question → player choices → response
+    ══════════════════════════════════════════════ -->
+
+    <!-- ══════════════════════════════════════════════
+         05 · CHOICE — Final decision
+    ══════════════════════════════════════════════ -->
+    <div class="scene" id="scene-choice">
+        <div class="scene-bg"></div>
+        <div class="choice-content">
+            <div class="choice-eyebrow">All fragments recovered</div>
+            <div class="choice-question">
+                The investigator is waiting.<br>
+                What do you tell him?
+            </div>
+            <div class="choice-buttons">
+                <button class="choice-btn comply" onclick="chooseEnding('comply')">
+                    Tell him what I remember
+                </button>
+                <button class="choice-btn resist" onclick="chooseEnding('resist')">
+                    I can't be certain
+                </button>
+            </div>
+            <div class="choice-subtext">This choice cannot be undone</div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         06a · ENDING A — Comply
+    ══════════════════════════════════════════════ -->
+    <div class="scene" id="scene-ending-comply">
+        <div class="scene-bg"></div>
+        <div class="ending-content">
+            <div class="ending-label">Ending A</div>
+            <div class="ending-title" id="ending-title-comply"></div>
+            <div class="ending-lines" id="ending-lines-comply"></div>
+            <button class="restart-btn hidden" id="ending-btn-comply" onclick="restartGame()">Begin Again</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         06b · ENDING B — Resist
+    ══════════════════════════════════════════════ -->
+    <div class="scene" id="scene-ending-resist">
+        <div class="scene-bg"></div>
+        <div class="ending-content">
+            <div class="ending-label">Ending B</div>
+            <div class="ending-title" id="ending-title-resist"></div>
+            <div class="ending-lines" id="ending-lines-resist"></div>
+            <button class="restart-btn hidden" id="ending-btn-resist" onclick="restartGame()">Begin Again</button>
+        </div>
+    </div>
+
+    <!-- socket.io optional — works without server for dev/testing -->
+    <script>
+        var sio = document.createElement('script');
+        sio.src = '/socket.io/socket.io.js';
+        sio.onload = loadGame;
+        sio.onerror = loadGame;
+        document.head.appendChild(sio);
+        function loadGame() {
+            var g = document.createElement('script');
+            g.src = 'game.js';
+            document.body.appendChild(g);
+        }
+    </script>
+</body>
+
+</html>
