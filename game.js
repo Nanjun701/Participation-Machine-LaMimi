@@ -338,53 +338,35 @@ What you do with that memory is up to you.`
     },
 
     // ── Endings ──
+    // Short poetic lines — typed out one by one automatically
     endings: {
         comply: {
             label: "Ending A",
             title: "The Testimony",
-            body:
-`The investigator thanks you and leaves.
-
-You confirmed three things in that room:
-
-That the barista expressed a wish for the deceased to disappear.
-That you witnessed a confrontation between them at the café.
-That one of the figures at the scene resembled the barista.
-
-Every word you said was a real memory.
-None of it was a lie.
-
-The barista is arrested the following week.
-The investigation closes.
-The construction site files are never reviewed.
-
-What you built in that white room was not a lie.
-It was something more dangerous —
-a true memory, placed inside the wrong frame.`
+            lines: [
+                "The investigator thanks you.",
+                "He leaves without looking back.",
+                "You said only what was true.",
+                "Every word of it was a real memory.",
+                "The barista is arrested the following week.",
+                "The construction site files are never reviewed.",
+                "You did not lie.",
+                "That is the part you will keep returning to.",
+            ]
         },
         resist: {
             label: "Ending B",
             title: "What You Cannot Say",
-            body:
-`You told the investigator you couldn't be certain.
-
-You remember two figures.
-You remember something falling.
-You remember a sound — metal, cold, the colour white.
-
-But you cannot say with certainty who those figures were.
-You cannot connect the man from the café to the street.
-You cannot prove any of it with what you have.
-
-The investigator thanks you and leaves.
-You sit in the white room alone for a while.
-
-The barista is arrested on other evidence. Or he isn't.
-You will never know which.
-
-You did not save anyone.
-But you did not destroy anyone with your own words.
-That was the only truth you were able to offer.`
+            lines: [
+                "The investigator nods.",
+                "He leaves without saying whether it was enough.",
+                "The room stays white for a long time.",
+                "You remember two figures.",
+                "You remember something falling.",
+                "That is all you were able to honestly say.",
+                "Somewhere, the barista goes home.",
+                "You will never know what comes after.",
+            ]
         }
     }
 };
@@ -872,14 +854,55 @@ function updateEvidenceDot(memId) {
 }
 
 // ═══════════════════════════════════════════════════
-// ENDINGS
+// ENDINGS — lines type out one by one, auto-advancing
 // ═══════════════════════════════════════════════════
 
+let endingType      = null;
+let endingLineIndex = 0;
+let endingTimer     = null;
+
 function chooseEnding(type) {
-    const ending = STORY.endings[type];
-    document.getElementById(`ending-title-${type}`).textContent = ending.title;
-    document.getElementById(`ending-body-${type}`).textContent  = ending.body;
-    transitionTo(`ending-${type}`);
+    endingType      = type;
+    endingLineIndex = 0;
+    transitionTo(`ending-${type}`, () => playEnding(type));
+}
+
+function playEnding(type) {
+    const ending  = STORY.endings[type];
+    const titleEl = document.getElementById(`ending-title-${type}`);
+    const linesEl = document.getElementById(`ending-lines-${type}`);
+    const btnEl   = document.getElementById(`ending-btn-${type}`);
+
+    titleEl.textContent = ending.title;
+    linesEl.innerHTML   = '';
+    btnEl.classList.add('hidden');
+
+    endingLineIndex = 0;
+    showEndingLine(type);
+}
+
+function showEndingLine(type) {
+    const ending  = STORY.endings[type];
+    const linesEl = document.getElementById(`ending-lines-${type}`);
+    const btnEl   = document.getElementById(`ending-btn-${type}`);
+
+    if (endingLineIndex >= ending.lines.length) {
+        // All lines shown — reveal restart button
+        setTimeout(() => btnEl.classList.remove('hidden'), 600);
+        return;
+    }
+
+    // Create a new line element that starts invisible
+    const lineEl = document.createElement('div');
+    lineEl.className = 'ending-line';
+    linesEl.appendChild(lineEl);
+
+    typeText(lineEl, ending.lines[endingLineIndex], () => {
+        endingLineIndex++;
+        // Pause between lines — longer at blank-feeling gaps
+        const pause = endingLineIndex % 3 === 0 ? 1400 : 900;
+        endingTimer = setTimeout(() => showEndingLine(type), pause);
+    });
 }
 
 function restartGame() {
