@@ -17,15 +17,18 @@ const DATABASE = {
     "532B6E86520001": { name: "object 6", info: "666666。", color: "#2196f3" }
 };
 
+// serve static files (CSS, JS, Scene images, etc.)
+app.use(express.static(__dirname));
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
 parser.on('data', (data) => {
     const uid = data.trim();
-    console.log("检测到物品 ID:", uid);
+    console.log("NFC detected:", uid);
     if (DATABASE[uid]) {
-        io.emit('show_info', DATABASE[uid]);
+        io.emit('show_info', { ...DATABASE[uid], uid });
     }
 });
 
