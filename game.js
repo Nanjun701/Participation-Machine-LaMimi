@@ -1,28 +1,24 @@
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// The Last Witness — Game Engine
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-// ═══════════════════════════════════════════════════
-// STORY DATA
-// ═══════════════════════════════════════════════════
+// game engine for The Last Witness
+// handles all story data, scene flow, NFC input, and dialogue logic
 
 const STORY = {
 
-    // ── Prelude pages (background + how to play) ──
-    prelude: [
-        {
-            title: "You are in a white room.",
-            body:
-`A man sits across from you. Unhurried. Professional.
+  // the 3 intro pages before the game starts
+  // sets up background + explains how to play
+  prelude: [
+    {
+      title: "You are in a white room.",
+      body:
+        `A man sits across from you. Unhurried. Professional.
 
 He says he's been hired to understand what happened three weeks ago
 on Wentao Street. He heard you were there that afternoon.
 He thinks you can help.`
-        },
-        {
-            title: "Your memory is not what it was.",
-            body:
-`Not forgetting — more like certain things won't come into focus
+    },
+    {
+      title: "Your memory is not what it was.",
+      body:
+        `Not forgetting — more like certain things won't come into focus
 when you try to look at them directly.
 
 You know you were at a café. You know you walked home past the
@@ -30,11 +26,11 @@ construction on Wentao Street. Beyond that, something has been
 sealed away.
 
 There are objects on the table between you.`
-        },
-        {
-            title: "How to play.",
-            body:
-`The investigator will ask you to examine each object.
+    },
+    {
+      title: "How to play.",
+      body:
+        `The investigator will ask you to examine each object.
 Pick it up and place it on the reader.
 A memory will surface.
 
@@ -43,622 +39,759 @@ You may answer however you choose — truthfully, or not.
 
 You remember more than you think.
 What you do with that memory is up to you.`
-        }
-    ],
+    }
+  ],
 
-    // ── Opening lines (investigator, first time in white room) ──
-    opening: [
-        { speaker: "INVESTIGATOR",
-          text: "Please, sit down. I appreciate you taking the time." },
-        { speaker: "INVESTIGATOR",
-          text: "Nothing formal about this. I just need your help filling in a few details." },
-        { speaker: "INVESTIGATOR",
-          text: "There are some objects on the table — things connected to that week." },
-        { speaker: "INVESTIGATOR",
-          text: "I'd like to go through them with you, one at a time. Whenever you're ready." },
-    ],
+  // what the investigator says the very first time you enter the white room
+  // only plays once — after that we go straight to object prompts
+  opening: [
+    {
+      speaker: "INVESTIGATOR",
+      text: "Please, sit down. I appreciate you taking the time."
+    },
+    {
+      speaker: "INVESTIGATOR",
+      text: "Nothing formal about this. I just need your help filling in a few details."
+    },
+    {
+      speaker: "INVESTIGATOR",
+      text: "There are some objects on the table — things connected to that week."
+    },
+    {
+      speaker: "INVESTIGATOR",
+      text: "I'd like to go through them with you, one at a time. Whenever you're ready."
+    },
+  ],
 
-    // ── Order investigator requests objects ──
-    // Chronological: establish café → meet stranger → see confrontation → leave → return AirPod → accident
-    memoryOrder: [
-        "53C19186520001",   // Coffee Sleeve
-        "53AC8C86520001",   // Sugar Packet
-        "53C97A86520001",   // Earphones
-        "53B28486520001",   // Receipt
-        "53A36287520001",   // AirPod
-        "532B6E86520001",   // Phone
-    ],
+  // the order objects get introduced — roughly chronological through the day
+  // coffee sleeve → stranger → confrontation → leaving → returning airpod → phone photo
+  memoryOrder: [
+    "53C19186520001",   // Coffee Sleeve
+    "53AC8C86520001",   // Sugar Packet
+    "53C97A86520001",   // Earphones
+    "53B28486520001",   // Receipt
+    "53A36287520001",   // AirPod
+    "532B6E86520001",   // Phone
+  ],
 
-    // ── Memory definitions ──
-    // Each object has: prompt (inv speaks before scan), memory lines,
-    // question (inv asks after memory), choices (player's answer options)
-    memories: {
+  // each object's full memory data
+  // prompt   = what the investigator says before you place the object
+  // lines    = the memory that surfaces after scanning
+  // question = what he asks you once the memory ends
+  // choices  = your 3 answer options + the investigator's response to each
+  memories: {
 
-        "53C19186520001": {
-            id:         "memory-1",
-            objectName: "Coffee Sleeve",
-            icon:       "☕",
-            memoryTitle: "The Regular",
-            memoryTime:  "Weeks Before",
+    "53C19186520001": {
+      id: "memory-1",
+      objectName: "Coffee Sleeve",
+      icon: "☕",
+      memoryTitle: "The Regular",
+      memoryTime: "Weeks Before",
 
-            prompt: [
-                { speaker: "INVESTIGATOR",
-                  text: "Let's start somewhere familiar. You were a regular at a café on Zhongshan Road — every morning, same seat." },
-                { speaker: "INVESTIGATOR",
-                  text: "This sleeve is from one of their cups. Please place it on the reader when you're ready." },
-            ],
-
-            lines: [
-                { speaker: "PROTAGONIST",
-                  text: "The window seat. I always took it — by habit more than anything." },
-                { speaker: "PROTAGONIST",
-                  text: "He knew my order before I sat down. We talked sometimes, about nothing in particular." },
-                { speaker: "PROTAGONIST",
-                  text: "He mentioned a tenant more than once. Someone who owed him money and wouldn't leave." },
-                { speaker: "PROTAGONIST",
-                  text: "He said he wished the man would just disappear. I thought he was venting." },
-            ],
-
-            question: [
-                { speaker: "INVESTIGATOR",
-                  text: "The barista — the way he spoke about this tenant. More than venting, would you say? Building toward something?" },
-            ],
-
-            choices: [
-                { text:     "Yes. He said he wished the man gone. He wasn't laughing when he said it.",
-                  type:     "comply",
-                  response: "I see. Thank you for being direct about that." },
-                { text:     "He vented. But lots of people vent. I didn't read anything into it.",
-                  type:     "neutral",
-                  response: "That's a fair distinction." },
-                { text:     "I can't say what he meant by it. People say things they don't mean.",
-                  type:     "resist",
-                  response: "Of course. We can leave that there." },
-            ]
+      prompt: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "Let's start somewhere familiar. You were a regular at a café on Zhongshan Road — every morning, same seat."
         },
-
-        "53AC8C86520001": {
-            id:         "memory-2",
-            objectName: "Sugar Packet",
-            icon:       "🍬",
-            memoryTitle: "The Stranger",
-            memoryTime:  "That Afternoon · 15:00",
-
-            prompt: [
-                { speaker: "INVESTIGATOR",
-                  text: "That same afternoon, a man sat down next to you." },
-                { speaker: "INVESTIGATOR",
-                  text: "I believe this sugar packet came from that exchange. Please place it on the reader." },
-            ],
-
-            lines: [
-                { speaker: "PROTAGONIST",
-                  text: "He slid it across the table. Said he didn't take sugar, but I might want it." },
-                { speaker: "PROTAGONIST",
-                  text: "We talked about the weather. He seemed tired but friendly. Easy to talk to." },
-                { speaker: "PROTAGONIST",
-                  text: "The kind of person you feel comfortable with immediately." },
-                { speaker: "PROTAGONIST",
-                  text: "I never asked his name." },
-            ],
-
-            question: [
-                { speaker: "INVESTIGATOR",
-                  text: "Thinking about him now — knowing what you know — does anything connect him to what you'd heard about the tenant?" },
-            ],
-
-            choices: [
-                { text:     "Now that you say it — there was something familiar about him. Maybe.",
-                  type:     "comply",
-                  response: "Interesting. That's worth noting." },
-                { text:     "I really can't say. I had no reason to connect them at the time.",
-                  type:     "neutral",
-                  response: "Understandable." },
-                { text:     "No. He was a stranger. I refuse to make that connection.",
-                  type:     "resist",
-                  response: "Of course." },
-            ]
+        {
+          speaker: "INVESTIGATOR",
+          text: "This sleeve is from one of their cups. Please place it on the reader when you're ready."
         },
+      ],
 
-        "53C97A86520001": {
-            id:         "memory-5",
-            objectName: "Earphones",
-            icon:       "🎧",
-            memoryTitle: "3:30 PM",
-            memoryTime:  "That Afternoon · 15:30",
-
-            prompt: [
-                { speaker: "INVESTIGATOR",
-                  text: "You were still in the café at 3:30. These are yours — you had them in." },
-                { speaker: "INVESTIGATOR",
-                  text: "There's a specific moment I want to understand. Please." },
-            ],
-
-            lines: [
-                { speaker: "PROTAGONIST",
-                  text: "I took them out because something caught my attention." },
-                { speaker: "PROTAGONIST",
-                  text: "The barista was walking toward a table. His expression was different from usual. Cold." },
-                { speaker: "PROTAGONIST",
-                  text: "He put something down very deliberately. Then just stood there." },
-                { speaker: "PROTAGONIST",
-                  text: "I could only see the back of the other person's head." },
-            ],
-
-            question: [
-                { speaker: "INVESTIGATOR",
-                  text: "How would you describe what you saw between them — that gesture, that moment?" },
-            ],
-
-            choices: [
-                { text:     "It looked like a confrontation. The barista was in control. The other person was not.",
-                  type:     "comply",
-                  response: "That's very clear. Thank you." },
-                { text:     "It looked tense. But I only had a moment's view. I couldn't fully read it.",
-                  type:     "neutral",
-                  response: "Fair enough." },
-                { text:     "I saw someone put something on a table. That's all I can honestly say.",
-                  type:     "resist",
-                  response: "Alright." },
-            ]
+      lines: [
+        {
+          speaker: "PROTAGONIST",
+          text: "The window seat. I always took it — by habit more than anything."
         },
-
-        "53B28486520001": {
-            id:         "memory-3",
-            objectName: "Receipt",
-            icon:       "🧾",
-            memoryTitle: "Leaving",
-            memoryTime:  "That Afternoon · 16:00",
-
-            prompt: [
-                { speaker: "INVESTIGATOR",
-                  text: "Your receipt from the café. Timestamped 3:58 PM." },
-                { speaker: "INVESTIGATOR",
-                  text: "I want to understand who was still there when you left. Take a moment with it." },
-            ],
-
-            lines: [
-                { speaker: "PROTAGONIST",
-                  text: "I had a 4:30 appointment. I paid and left." },
-                { speaker: "PROTAGONIST",
-                  text: "The man I'd spoken with was still at his table. Reading his phone." },
-                { speaker: "PROTAGONIST",
-                  text: "The barista nodded when I waved. Everything felt ordinary." },
-                { speaker: "PROTAGONIST",
-                  text: "I remember thinking it had been a pleasant afternoon." },
-            ],
-
-            question: [
-                { speaker: "INVESTIGATOR",
-                  text: "You left. The stranger stayed. The barista stayed. Does that sequence feel significant to you now?" },
-            ],
-
-            choices: [
-                { text:     "Yes. Looking back — the barista stayed on purpose. He was waiting for something.",
-                  type:     "comply",
-                  response: "That's the impression I had as well." },
-                { text:     "I don't know. I wasn't watching them. I just needed to leave.",
-                  type:     "neutral",
-                  response: "Of course." },
-                { text:     "Lots of people stay in a café. I don't see why the timing matters.",
-                  type:     "resist",
-                  response: "You're right to question it." },
-            ]
+        {
+          speaker: "PROTAGONIST",
+          text: "He knew my order before I sat down. We talked sometimes, about nothing in particular."
         },
-
-        "53A36287520001": {
-            id:         "memory-4",
-            objectName: "AirPod",
-            icon:       "🎵",
-            memoryTitle: "16:05",
-            memoryTime:  "That Afternoon into Evening",
-
-            prompt: [
-                { speaker: "INVESTIGATOR",
-                  text: "This was found in your coat pocket. One AirPod — not yours. I verified that." },
-                { speaker: "INVESTIGATOR",
-                  text: "I believe you know where it came from. Please place it on the reader." },
-            ],
-
-            lines: [
-                { speaker: "PROTAGONIST",
-                  text: "He'd left it on the chair. I ran out after him to return it." },
-                { speaker: "PROTAGONIST",
-                  text: "He was distracted — said thank you, put it in his pocket, walked away." },
-                { speaker: "PROTAGONIST",
-                  text: "I walked home. The usual route, past the construction on Wentao Street." },
-                { speaker: "PROTAGONIST",
-                  text: "And then—" },
-                { speaker: "PROTAGONIST",
-                  text: "There's something there. But I can't hold it still." },
-            ],
-
-            question: [
-                { speaker: "INVESTIGATOR",
-                  text: "You passed Wentao Street that evening. The construction site. What did you see?" },
-            ],
-
-            choices: [
-                { text:     "Two figures. Someone fell. And I think — one of them was familiar to me.",
-                  type:     "comply",
-                  response: "That's important. Thank you." },
-                { text:     "I saw chaos. People. But I can't identify anyone. My memory breaks down there.",
-                  type:     "neutral",
-                  response: "That's alright. We can come back to it." },
-                { text:     "I can't confirm what I saw. I was in distress. Anything I say would only be speculation.",
-                  type:     "resist",
-                  response: "I understand." },
-            ]
+        {
+          speaker: "PROTAGONIST",
+          text: "He mentioned a tenant more than once. Someone who owed him money and wouldn't leave."
         },
+        {
+          speaker: "PROTAGONIST",
+          text: "He said he wished the man would just disappear. I thought he was venting."
+        },
+      ],
 
-        "532B6E86520001": {
-            id:         "memory-6",
-            objectName: "Phone",
-            icon:       "📱",
-            memoryTitle: "18:35",
-            memoryTime:  "That Evening",
+      question: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "The barista — the way he spoke about this tenant. More than venting, would you say? Building toward something?"
+        },
+      ],
 
-            prompt: [
-                { speaker: "INVESTIGATOR",
-                  text: "Your phone. There's a photograph on it — timestamped 6:42 PM on Wentao Street." },
-                { speaker: "INVESTIGATOR",
-                  text: "I don't think you remember taking it. This is the last one." },
-            ],
-
-            lines: [
-                { speaker: "PROTAGONIST",
-                  text: "I don't remember taking it." },
-                { speaker: "PROTAGONIST",
-                  text: "There's something on the ground. Two figures." },
-                { speaker: "PROTAGONIST",
-                  text: "A sound — metal. Cold. The colour white everywhere." },
-                { speaker: "PROTAGONIST",
-                  text: "I don't know how long I stood there." },
-                { speaker: "PROTAGONIST",
-                  text: "I couldn't move." },
-            ],
-
-            question: [
-                { speaker: "INVESTIGATOR",
-                  text: "The two figures in that photograph. Was one of them someone you recognised — someone you'd seen earlier that day?" },
-            ],
-
-            choices: [
-                { text:     "Yes. I believe so. The way they were standing — it reminded me of the barista.",
-                  type:     "comply",
-                  response: "Thank you. That's what I needed to hear." },
-                { text:     "I can't be certain. The photo is blurred and I wasn't in a state to observe clearly.",
-                  type:     "neutral",
-                  response: "I understand. You've been very helpful." },
-                { text:     "I refuse to identify anyone from a photograph I don't even remember taking.",
-                  type:     "resist",
-                  response: "Of course. I won't push further." },
-            ]
-        }
+      choices: [
+        {
+          text: "Yes. He said he wished the man gone. He wasn't laughing when he said it.",
+          type: "comply",
+          response: "I see. Thank you for being direct about that."
+        },
+        {
+          text: "He vented. But lots of people vent. I didn't read anything into it.",
+          type: "neutral",
+          response: "That's a fair distinction."
+        },
+        {
+          text: "I can't say what he meant by it. People say things they don't mean.",
+          type: "resist",
+          response: "Of course. We can leave that there."
+        },
+      ]
     },
 
-    // ── Endings ──
-    // Short poetic lines — typed out one by one automatically
-    endings: {
-        comply: {
-            label: "Ending A",
-            title: "The Testimony",
-            lines: [
-                "The investigator thanks you.",
-                "He leaves without looking back.",
-                "You said only what was true.",
-                "Every word of it was a real memory.",
-                "The barista is arrested the following week.",
-                "The construction site files are never reviewed.",
-                "You did not lie.",
-                "That is the part you will keep returning to.",
-            ]
+    "53AC8C86520001": {
+      id: "memory-2",
+      objectName: "Sugar Packet",
+      icon: "🍬",
+      memoryTitle: "The Stranger",
+      memoryTime: "That Afternoon · 15:00",
+
+      prompt: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "That same afternoon, a man sat down next to you."
         },
-        resist: {
-            label: "Ending B",
-            title: "What You Cannot Say",
-            lines: [
-                "The investigator nods.",
-                "He leaves without saying whether it was enough.",
-                "The room stays white for a long time.",
-                "You remember two figures.",
-                "You remember something falling.",
-                "That is all you were able to honestly say.",
-                "Somewhere, the barista goes home.",
-                "You will never know what comes after.",
-            ]
-        }
+        {
+          speaker: "INVESTIGATOR",
+          text: "I believe this sugar packet came from that exchange. Please place it on the reader."
+        },
+      ],
+
+      lines: [
+        {
+          speaker: "PROTAGONIST",
+          text: "He slid it across the table. Said he didn't take sugar, but I might want it."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "We talked about the weather. He seemed tired but friendly. Easy to talk to."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "The kind of person you feel comfortable with immediately."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "I never asked his name."
+        },
+      ],
+
+      question: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "Thinking about him now — knowing what you know — does anything connect him to what you'd heard about the tenant?"
+        },
+      ],
+
+      choices: [
+        {
+          text: "Now that you say it — there was something familiar about him. Maybe.",
+          type: "comply",
+          response: "Interesting. That's worth noting."
+        },
+        {
+          text: "I really can't say. I had no reason to connect them at the time.",
+          type: "neutral",
+          response: "Understandable."
+        },
+        {
+          text: "No. He was a stranger. I refuse to make that connection.",
+          type: "resist",
+          response: "Of course."
+        },
+      ]
+    },
+
+    "53C97A86520001": {
+      id: "memory-5",
+      objectName: "Earphones",
+      icon: "🎧",
+      memoryTitle: "3:30 PM",
+      memoryTime: "That Afternoon · 15:30",
+
+      prompt: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "You were still in the café at 3:30. These are yours — you had them in."
+        },
+        {
+          speaker: "INVESTIGATOR",
+          text: "There's a specific moment I want to understand. Please."
+        },
+      ],
+
+      lines: [
+        {
+          speaker: "PROTAGONIST",
+          text: "I took them out because something caught my attention."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "The barista was walking toward a table. His expression was different from usual. Cold."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "He put something down very deliberately. Then just stood there."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "I could only see the back of the other person's head."
+        },
+      ],
+
+      question: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "How would you describe what you saw between them — that gesture, that moment?"
+        },
+      ],
+
+      choices: [
+        {
+          text: "It looked like a confrontation. The barista was in control. The other person was not.",
+          type: "comply",
+          response: "That's very clear. Thank you."
+        },
+        {
+          text: "It looked tense. But I only had a moment's view. I couldn't fully read it.",
+          type: "neutral",
+          response: "Fair enough."
+        },
+        {
+          text: "I saw someone put something on a table. That's all I can honestly say.",
+          type: "resist",
+          response: "Alright."
+        },
+      ]
+    },
+
+    "53B28486520001": {
+      id: "memory-3",
+      objectName: "Receipt",
+      icon: "🧾",
+      memoryTitle: "Leaving",
+      memoryTime: "That Afternoon · 16:00",
+
+      prompt: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "Your receipt from the café. Timestamped 3:58 PM."
+        },
+        {
+          speaker: "INVESTIGATOR",
+          text: "I want to understand who was still there when you left. Take a moment with it."
+        },
+      ],
+
+      lines: [
+        {
+          speaker: "PROTAGONIST",
+          text: "I had a 4:30 appointment. I paid and left."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "The man I'd spoken with was still at his table. Reading his phone."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "The barista nodded when I waved. Everything felt ordinary."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "I remember thinking it had been a pleasant afternoon."
+        },
+      ],
+
+      question: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "You left. The stranger stayed. The barista stayed. Does that sequence feel significant to you now?"
+        },
+      ],
+
+      choices: [
+        {
+          text: "Yes. Looking back — the barista stayed on purpose. He was waiting for something.",
+          type: "comply",
+          response: "That's the impression I had as well."
+        },
+        {
+          text: "I don't know. I wasn't watching them. I just needed to leave.",
+          type: "neutral",
+          response: "Of course."
+        },
+        {
+          text: "Lots of people stay in a café. I don't see why the timing matters.",
+          type: "resist",
+          response: "You're right to question it."
+        },
+      ]
+    },
+
+    "53A36287520001": {
+      id: "memory-4",
+      objectName: "AirPod",
+      icon: "🎵",
+      memoryTitle: "16:05",
+      memoryTime: "That Afternoon into Evening",
+
+      prompt: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "This was found in your coat pocket. One AirPod — not yours. I verified that."
+        },
+        {
+          speaker: "INVESTIGATOR",
+          text: "I believe you know where it came from. Please place it on the reader."
+        },
+      ],
+
+      lines: [
+        {
+          speaker: "PROTAGONIST",
+          text: "He'd left it on the chair. I ran out after him to return it."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "He was distracted — said thank you, put it in his pocket, walked away."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "I walked home. The usual route, past the construction on Wentao Street."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "And then—"
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "There's something there. But I can't hold it still."
+        },
+      ],
+
+      question: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "You passed Wentao Street that evening. The construction site. What did you see?"
+        },
+      ],
+
+      choices: [
+        {
+          text: "Two figures. Someone fell. And I think — one of them was familiar to me.",
+          type: "comply",
+          response: "That's important. Thank you."
+        },
+        {
+          text: "I saw chaos. People. But I can't identify anyone. My memory breaks down there.",
+          type: "neutral",
+          response: "That's alright. We can come back to it."
+        },
+        {
+          text: "I can't confirm what I saw. I was in distress. Anything I say would only be speculation.",
+          type: "resist",
+          response: "I understand."
+        },
+      ]
+    },
+
+    "532B6E86520001": {
+      id: "memory-6",
+      objectName: "Phone",
+      icon: "📱",
+      memoryTitle: "18:35",
+      memoryTime: "That Evening",
+
+      prompt: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "Your phone. There's a photograph on it — timestamped 6:42 PM on Wentao Street."
+        },
+        {
+          speaker: "INVESTIGATOR",
+          text: "I don't think you remember taking it. This is the last one."
+        },
+      ],
+
+      lines: [
+        {
+          speaker: "PROTAGONIST",
+          text: "I don't remember taking it."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "There's something on the ground. Two figures."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "A sound — metal. Cold. The colour white everywhere."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "I don't know how long I stood there."
+        },
+        {
+          speaker: "PROTAGONIST",
+          text: "I couldn't move."
+        },
+      ],
+
+      question: [
+        {
+          speaker: "INVESTIGATOR",
+          text: "The two figures in that photograph. Was one of them someone you recognised — someone you'd seen earlier that day?"
+        },
+      ],
+
+      choices: [
+        {
+          text: "Yes. I believe so. The way they were standing — it reminded me of the barista.",
+          type: "comply",
+          response: "Thank you. That's what I needed to hear."
+        },
+        {
+          text: "I can't be certain. The photo is blurred and I wasn't in a state to observe clearly.",
+          type: "neutral",
+          response: "I understand. You've been very helpful."
+        },
+        {
+          text: "I refuse to identify anyone from a photograph I don't even remember taking.",
+          type: "resist",
+          response: "Of course. I won't push further."
+        },
+      ]
     }
+  },
+
+  // the two endings — short poetic lines typed out one by one with pauses
+  endings: {
+    comply: {
+      label: "Ending A",
+      title: "The Testimony",
+      lines: [
+        "The investigator thanks you.",
+        "He leaves without looking back.",
+        "You said only what was true.",
+        "Every word of it was a real memory.",
+        "The barista is arrested the following week.",
+        "The construction site files are never reviewed.",
+        "You did not lie.",
+        "That is the part you will keep returning to.",
+      ]
+    },
+    resist: {
+      label: "Ending B",
+      title: "What You Cannot Say",
+      lines: [
+        "The investigator nods.",
+        "He leaves without saying whether it was enough.",
+        "The room stays white for a long time.",
+        "You remember two figures.",
+        "You remember something falling.",
+        "That is all you were able to honestly say.",
+        "Somewhere, the barista goes home.",
+        "You will never know what comes after.",
+      ]
+    }
+  }
 };
 
-// ═══════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// game state — everything we need to track where we are right now
+// ─────────────────────────────────────────────────────────────
 
-let currentScene    = 'intro';
-let isTransitioning = false;
-let twTimer         = null;
-let typingDone      = false;
+let currentScene = 'intro';
+let isTransitioning = false;   // blocks double-firing scene transitions
+let twTimer = null;    // handle for the typewriter setTimeout
+let typingDone = false;   // flips to true when current line finishes
 
-// Prelude
-let preludeIndex = 0;
+// prelude
+let preludeIndex = 0;          // which of the 3 intro pages we're on
 
-// Investigation state machine
-// invPhase: 'dialogue' | 'scan'
-let invPhase         = 'idle';
-let invQueue         = [];   // lines currently being shown
-let invQueueIndex    = 0;
-let invQueueActive   = false;
-let hasPlayedOpening = false;
-let objectIndex      = 0;    // which position in memoryOrder we're on
-let expectedUID      = null; // UID currently expected from NFC
+// white room / investigation state
+// invPhase: 'dialogue' = investigator is talking, 'scan' = waiting for an nfc tap
+let invPhase = 'idle';
+let invQueue = [];     // the lines we're currently cycling through
+let invQueueIndex = 0;
+let invQueueActive = false;
+let hasPlayedOpening = false;  // so the opening speech doesn't replay on return visits
+let objectIndex = 0;      // which object we're on right now (0–5)
+let expectedUID = null;   // the exact nfc uid we're waiting for
 
-// Memory state
-let activeMemory  = null;
-// memPhase: 'memory' | 'question' | 'choices' | 'response'
-let memPhase      = 'memory';
-let memLineIndex  = 0;
+// memory scene state
+// memPhase goes: 'memory' → 'question' → 'choices' → 'response'
+let activeMemory = null;
+let memPhase = 'memory';
+let memLineIndex = 0;
 
-// Answers
-let playerAnswers = {}; // { memoryId: 'comply'|'neutral'|'resist' }
+// what the player chose for each object: { memoryId: 'comply'|'neutral'|'resist' }
+let playerAnswers = {};
 
-// Evidence
+// which evidence dots are lit up (set of memoryIds)
 let foundEvidence = new Set();
 
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// startup — build the dynamic bits and get things ready
+// ─────────────────────────────────────────────────────────────
 
 function init() {
-    buildMemoryScenes();
-    buildEvidenceDots();
-    renderPreludePage();
+  buildMemoryScenes();
+  buildEvidenceDots();
+  renderPreludePage();
 }
 
-// ═══════════════════════════════════════════════════
-// SCENE TRANSITIONS
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// scene transitions — fade out, swap scene, fade back in
+// ─────────────────────────────────────────────────────────────
 
 function transitionTo(sceneId, onArrival) {
-    if (isTransitioning) return;
-    isTransitioning = true;
-    const overlay = document.getElementById('fadeOverlay');
-    overlay.classList.add('active');
+  if (isTransitioning) return;
+  isTransitioning = true;
+  const overlay = document.getElementById('fadeOverlay');
+  overlay.classList.add('active');
+  setTimeout(() => {
+    document.querySelectorAll('.scene.active')
+      .forEach(s => s.classList.remove('active'));
+    const next = document.getElementById(`scene-${sceneId}`);
+    if (next) next.classList.add('active');
+    currentScene = sceneId;
+    overlay.classList.remove('active');
     setTimeout(() => {
-        document.querySelectorAll('.scene.active')
-                .forEach(s => s.classList.remove('active'));
-        const next = document.getElementById(`scene-${sceneId}`);
-        if (next) next.classList.add('active');
-        currentScene = sceneId;
-        overlay.classList.remove('active');
-        setTimeout(() => {
-            isTransitioning = false;
-            if (onArrival) onArrival();
-        }, 800);
+      isTransitioning = false;
+      if (onArrival) onArrival();
     }, 800);
+  }, 800);
 }
 
-// ═══════════════════════════════════════════════════
-// TYPEWRITER
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// typewriter — types text one character at a time
+// ─────────────────────────────────────────────────────────────
 
 function typeText(el, text, onDone) {
-    el.textContent = '';
-    typingDone = false;
-    let i = 0;
-    clearTimeout(twTimer);
-    (function tick() {
-        if (i < text.length) {
-            el.textContent += text[i++];
-            twTimer = setTimeout(tick, 24);
-        } else {
-            typingDone = true;
-            if (onDone) onDone();
-        }
-    })();
+  el.textContent = '';
+  typingDone = false;
+  let i = 0;
+  clearTimeout(twTimer);
+  (function tick() {
+    if (i < text.length) {
+      el.textContent += text[i++];
+      twTimer = setTimeout(tick, 24);
+    } else {
+      typingDone = true;
+      if (onDone) onDone();
+    }
+  })();
 }
 
+// skips the animation and just dumps all the text at once
 function skipTypewriter(el, text) {
-    clearTimeout(twTimer);
-    el.textContent = text;
-    typingDone = true;
+  clearTimeout(twTimer);
+  el.textContent = text;
+  typingDone = true;
 }
 
-// ═══════════════════════════════════════════════════
-// PRELUDE
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// prelude — the 3 intro pages before the white room
+// ─────────────────────────────────────────────────────────────
 
 function renderPreludePage() {
-    const page  = STORY.prelude[preludeIndex];
-    const total = STORY.prelude.length;
-    document.getElementById('preludeNum').textContent =
-        `0${preludeIndex + 1} / 0${total}`;
-    document.getElementById('preludeTitle').textContent = page.title;
-    document.getElementById('preludeText').textContent  = page.body;
-    const btn = document.getElementById('preludeBtn');
-    btn.textContent = (preludeIndex < total - 1) ? 'Continue' : 'Begin';
+  const page = STORY.prelude[preludeIndex];
+  const total = STORY.prelude.length;
+  document.getElementById('preludeNum').textContent =
+    `0${preludeIndex + 1} / 0${total}`;
+  document.getElementById('preludeTitle').textContent = page.title;
+  document.getElementById('preludeText').textContent = page.body;
+  const btn = document.getElementById('preludeBtn');
+  btn.textContent = (preludeIndex < total - 1) ? 'Continue' : 'Begin';
 }
 
 function goToPrelude() {
-    preludeIndex = 0;
-    renderPreludePage();
-    transitionTo('prelude');
+  preludeIndex = 0;
+  renderPreludePage();
+  transitionTo('prelude');
 }
 
 function advancePrelude() {
-    preludeIndex++;
-    if (preludeIndex < STORY.prelude.length) {
-        renderPreludePage();
-    } else {
-        preludeIndex = 0;
-        startInvestigation();
-    }
+  preludeIndex++;
+  if (preludeIndex < STORY.prelude.length) {
+    renderPreludePage();
+  } else {
+    preludeIndex = 0;
+    startInvestigation();
+  }
 }
 
-// ═══════════════════════════════════════════════════
-// INVESTIGATION — State machine
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// investigation — the white room where objects get scanned
+// ─────────────────────────────────────────────────────────────
 
 function startInvestigation() {
-    transitionTo('investigation', () => {
-        if (!hasPlayedOpening) {
-            hasPlayedOpening = true;
-            runInvDialogue(STORY.opening, () => {
-                promptForObject(0);
-            });
-        } else {
-            promptForObject(objectIndex);
-        }
-    });
-}
-
-// Show investigator's prompt for the object at position idx in memoryOrder
-function promptForObject(idx) {
-    if (idx >= STORY.memoryOrder.length) {
-        // All done — go to final choice
-        transitionTo('choice');
-        return;
+  transitionTo('investigation', () => {
+    if (!hasPlayedOpening) {
+      hasPlayedOpening = true;
+      runInvDialogue(STORY.opening, () => {
+        promptForObject(0);
+      });
+    } else {
+      promptForObject(objectIndex);
     }
-    objectIndex = idx;
-    const uid = STORY.memoryOrder[idx];
-    const mem = STORY.memories[uid];
-    runInvDialogue(mem.prompt, () => {
-        enterScanState(uid);
-    });
+  });
 }
 
-// Run a list of {speaker, text} lines in the investigation room
+// plays the investigator's intro speech for the object at position idx
+function promptForObject(idx) {
+  if (idx >= STORY.memoryOrder.length) {
+    // all 6 objects done — head to the final choice
+    transitionTo('choice');
+    return;
+  }
+  objectIndex = idx;
+  const uid = STORY.memoryOrder[idx];
+  const mem = STORY.memories[uid];
+  runInvDialogue(mem.prompt, () => {
+    enterScanState(uid);
+  });
+}
+
+// plays through a list of {speaker, text} lines in the white room
 function runInvDialogue(lines, onComplete) {
-    invPhase       = 'dialogue';
-    invQueue       = lines;
-    invQueueIndex  = 0;
-    invQueueActive = true;
-    invComplete    = onComplete || null;
+  invPhase = 'dialogue';
+  invQueue = lines;
+  invQueueIndex = 0;
+  invQueueActive = true;
+  invComplete = onComplete || null;
 
-    const dlg = document.getElementById('invDialogue');
-    const swt = document.getElementById('scanWait');
-    dlg.classList.remove('hidden');
-    swt.classList.add('hidden');
+  const dlg = document.getElementById('invDialogue');
+  const swt = document.getElementById('scanWait');
+  dlg.classList.remove('hidden');
+  swt.classList.add('hidden');
 
-    showInvLine();
+  showInvLine();
 }
 
 let invComplete = null;
 
 function showInvLine() {
-    const line = invQueue[invQueueIndex];
-    const hint = document.getElementById('invHint');
-    hint.classList.remove('show');
-    document.getElementById('invSpeaker').textContent = line.speaker;
-    typeText(document.getElementById('invText'), line.text, () => {
-        hint.classList.add('show');
-    });
+  const line = invQueue[invQueueIndex];
+  const hint = document.getElementById('invHint');
+  hint.classList.remove('show');
+  document.getElementById('invSpeaker').textContent = line.speaker;
+  typeText(document.getElementById('invText'), line.text, () => {
+    hint.classList.add('show');
+  });
 }
 
 function advanceInvDialogue() {
-    if (!invQueueActive) return;
-    if (!typingDone) {
-        // Skip typewriter
-        const line = invQueue[invQueueIndex];
-        skipTypewriter(document.getElementById('invText'), line.text);
-        document.getElementById('invHint').classList.add('show');
-        return;
+  if (!invQueueActive) return;
+  if (!typingDone) {
+    // player clicked before typing finished — just show the full line
+    const line = invQueue[invQueueIndex];
+    skipTypewriter(document.getElementById('invText'), line.text);
+    document.getElementById('invHint').classList.add('show');
+    return;
+  }
+  invQueueIndex++;
+  if (invQueueIndex < invQueue.length) {
+    showInvLine();
+  } else {
+    // done with this batch of lines — run the callback
+    invQueueActive = false;
+    invPhase = 'idle';
+    if (invComplete) {
+      const cb = invComplete;
+      invComplete = null;
+      cb();
     }
-    invQueueIndex++;
-    if (invQueueIndex < invQueue.length) {
-        showInvLine();
-    } else {
-        invQueueActive = false;
-        invPhase       = 'idle';
-        if (invComplete) {
-            const cb = invComplete;
-            invComplete = null;
-            cb();
-        }
-    }
+  }
 }
 
-// Show scan indicator, set expected UID
+// switches the white room into "waiting for nfc" mode
 function enterScanState(uid) {
-    invPhase    = 'scan';
-    expectedUID = uid;
+  invPhase = 'scan';
+  expectedUID = uid;
 
-    const mem = STORY.memories[uid];
-    document.getElementById('invDialogue').classList.add('hidden');
+  const mem = STORY.memories[uid];
+  document.getElementById('invDialogue').classList.add('hidden');
 
-    const swt = document.getElementById('scanWait');
-    swt.classList.remove('hidden');
+  const swt = document.getElementById('scanWait');
+  swt.classList.remove('hidden');
 
-    // Dev mode: show a button to simulate the NFC scan
-    const devBtn = document.getElementById('devTrigger');
-    devBtn.textContent = `${mem.icon}  Scan: ${mem.objectName}`;
-    devBtn.classList.remove('hidden');
+  // dev mode only: show a button so you can fake a scan without hardware
+  const devBtn = document.getElementById('devTrigger');
+  devBtn.textContent = `${mem.icon}  Scan: ${mem.objectName}`;
+  devBtn.classList.remove('hidden');
 
-    document.getElementById('nfcStatus').textContent = '';
+  document.getElementById('nfcStatus').textContent = '';
 }
 
-// ═══════════════════════════════════════════════════
-// NFC / PROP TRIGGER
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// nfc input — triggered by hardware or dev button
+// ─────────────────────────────────────────────────────────────
 
-// Called by hardware (via socket.io)
+// called by socket.io when the arduino reads a tag
 function triggerNFC(uid) {
-    if (currentScene !== 'investigation') return;
-    if (invPhase !== 'scan') return;
-    if (uid !== expectedUID) {
-        // Wrong object — show a gentle note
-        const status = document.getElementById('nfcStatus');
-        const expected = STORY.memories[expectedUID];
-        status.textContent = `Please place the ${expected.objectName} on the reader.`;
-        setTimeout(() => { status.textContent = ''; }, 2000);
-        return;
-    }
-    launchMemory(uid);
+  if (currentScene !== 'investigation') return;
+  if (invPhase !== 'scan') return;
+  if (uid !== expectedUID) {
+    // wrong object — gently tell the player which one we need
+    const status = document.getElementById('nfcStatus');
+    const expected = STORY.memories[expectedUID];
+    status.textContent = `Please place the ${expected.objectName} on the reader.`;
+    setTimeout(() => { status.textContent = ''; }, 2000);
+    return;
+  }
+  launchMemory(uid);
 }
 
-// Called by the dev trigger button
+// called when you click the dev button (simulates a real nfc scan)
 function devScanCurrent() {
-    if (invPhase !== 'scan' || !expectedUID) return;
-    launchMemory(expectedUID);
+  if (invPhase !== 'scan' || !expectedUID) return;
+  launchMemory(expectedUID);
 }
 
 function launchMemory(uid) {
-    const mem = STORY.memories[uid];
-    if (!mem) return;
+  const mem = STORY.memories[uid];
+  if (!mem) return;
 
-    const flash = document.getElementById('scanFlash');
-    flash.classList.add('flash');
-    setTimeout(() => flash.classList.remove('flash'), 110);
+  // quick flash effect when the scan fires
+  const flash = document.getElementById('scanFlash');
+  flash.classList.add('flash');
+  setTimeout(() => flash.classList.remove('flash'), 110);
 
-    const status = document.getElementById('nfcStatus');
-    status.textContent = `Memory surfacing: ${mem.objectName}`;
+  const status = document.getElementById('nfcStatus');
+  status.textContent = `Memory surfacing: ${mem.objectName}`;
 
-    setTimeout(() => {
-        transitionTo(mem.id, () => startMemory(mem));
-    }, 450);
+  setTimeout(() => {
+    transitionTo(mem.id, () => startMemory(mem));
+  }, 450);
 }
 
-// ═══════════════════════════════════════════════════
-// MEMORY SCENE — Phase machine
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// memory scenes — built dynamically, one per object
+// ─────────────────────────────────────────────────────────────
 
 function buildMemoryScenes() {
-    const choiceScene = document.getElementById('scene-choice');
-    Object.values(STORY.memories).forEach(mem => {
-        const div = document.createElement('div');
-        div.className = 'scene memory-scene';
-        div.id = `scene-${mem.id}`;
+  const choiceScene = document.getElementById('scene-choice');
+  Object.values(STORY.memories).forEach(mem => {
+    const div = document.createElement('div');
+    div.className = 'scene memory-scene';
+    div.id = `scene-${mem.id}`;
 
-        // Build choice buttons HTML
-        const choiceHTML = mem.choices.map((c, i) =>
-            `<button class="answer-option"
+    // build the answer buttons html from the choices array
+    const choiceHTML = mem.choices.map((c, i) =>
+      `<button class="answer-option"
                      data-idx="${i}"
                      onclick="selectAnswer('${mem.id}', ${i})">
                  ${c.text}
              </button>`
-        ).join('');
+    ).join('');
 
-        div.innerHTML = `
+    div.innerHTML = `
             <div class="scene-bg"></div>
             <div class="dialogue-wrapper">
                 <div class="memory-header">
@@ -686,285 +819,285 @@ function buildMemoryScenes() {
             </div>
         `;
 
-        div.addEventListener('click', handleMemoryClick);
-        document.body.insertBefore(div, choiceScene);
-    });
+    div.addEventListener('click', handleMemoryClick);
+    document.body.insertBefore(div, choiceScene);
+  });
 }
 
 function startMemory(mem) {
-    activeMemory = mem;
-    memPhase     = 'memory';
-    memLineIndex = 0;
+  activeMemory = mem;
+  memPhase = 'memory';
+  memLineIndex = 0;
 
-    // Show portrait
-    setTimeout(() => {
-        const p = document.getElementById(`portrait-${mem.id}`);
-        if (p) p.classList.add('visible');
-    }, 400);
+  // portrait fades in shortly after the scene arrives
+  setTimeout(() => {
+    const p = document.getElementById(`portrait-${mem.id}`);
+    if (p) p.classList.add('visible');
+  }, 400);
 
-    showMemLine();
+  showMemLine();
 }
 
 function showMemLine() {
-    let lines;
-    if (memPhase === 'memory')   lines = activeMemory.lines;
-    if (memPhase === 'question') lines = activeMemory.question;
+  let lines;
+  if (memPhase === 'memory') lines = activeMemory.lines;
+  if (memPhase === 'question') lines = activeMemory.question;
 
-    const line = lines[memLineIndex];
-    const hint = document.getElementById(`hint-${activeMemory.id}`);
-    hint.classList.remove('show');
+  const line = lines[memLineIndex];
+  const hint = document.getElementById(`hint-${activeMemory.id}`);
+  hint.classList.remove('show');
 
-    document.getElementById(`speaker-${activeMemory.id}`).textContent = line.speaker;
-    typeText(
-        document.getElementById(`text-${activeMemory.id}`),
-        line.text,
-        () => hint.classList.add('show')
-    );
+  document.getElementById(`speaker-${activeMemory.id}`).textContent = line.speaker;
+  typeText(
+    document.getElementById(`text-${activeMemory.id}`),
+    line.text,
+    () => hint.classList.add('show')
+  );
 }
 
-// Click handler for the entire memory scene div
+// handles clicks on the memory scene — but ignores clicks on answer buttons
 function handleMemoryClick(e) {
-    // Don't advance if user clicked an answer choice button
-    if (e.target.classList.contains('answer-option')) return;
-    advanceMemory();
+  if (e.target.classList.contains('answer-option')) return;
+  advanceMemory();
 }
 
 function advanceMemory() {
-    if (!activeMemory) return;
+  if (!activeMemory) return;
 
-    // Skip typewriter if still typing
-    if (!typingDone) {
-        const lines = memPhase === 'memory'
-            ? activeMemory.lines
-            : activeMemory.question;
-        skipTypewriter(
-            document.getElementById(`text-${activeMemory.id}`),
-            lines[memLineIndex].text
-        );
-        document.getElementById(`hint-${activeMemory.id}`).classList.add('show');
-        return;
+  // still typing? show the full line instead of advancing
+  if (!typingDone) {
+    const lines = memPhase === 'memory'
+      ? activeMemory.lines
+      : activeMemory.question;
+    skipTypewriter(
+      document.getElementById(`text-${activeMemory.id}`),
+      lines[memLineIndex].text
+    );
+    document.getElementById(`hint-${activeMemory.id}`).classList.add('show');
+    return;
+  }
+
+  memLineIndex++;
+
+  if (memPhase === 'memory') {
+    if (memLineIndex < activeMemory.lines.length) {
+      showMemLine();
+    } else {
+      // memory lines finished — now the investigator asks his question
+      memPhase = 'question';
+      memLineIndex = 0;
+      showMemLine();
     }
 
-    memLineIndex++;
-
-    if (memPhase === 'memory') {
-        if (memLineIndex < activeMemory.lines.length) {
-            showMemLine();
-        } else {
-            // Memory finished → show investigator question
-            memPhase     = 'question';
-            memLineIndex = 0;
-            showMemLine();
-        }
-
-    } else if (memPhase === 'question') {
-        if (memLineIndex < activeMemory.question.length) {
-            showMemLine();
-        } else {
-            // Question finished → show choices
-            showChoices();
-        }
+  } else if (memPhase === 'question') {
+    if (memLineIndex < activeMemory.question.length) {
+      showMemLine();
+    } else {
+      // question done — time to show the answer choices
+      showChoices();
     }
-    // 'choices' and 'response' phases handled separately
+  }
+  // choices and response phases are handled by selectAnswer / finishMemory
 }
 
 function showChoices() {
-    memPhase = 'choices';
-    const hint    = document.getElementById(`hint-${activeMemory.id}`);
-    const choices = document.getElementById(`choices-${activeMemory.id}`);
-    hint.classList.remove('show');
-    choices.classList.remove('hidden');
+  memPhase = 'choices';
+  const hint = document.getElementById(`hint-${activeMemory.id}`);
+  const choices = document.getElementById(`choices-${activeMemory.id}`);
+  hint.classList.remove('show');
+  choices.classList.remove('hidden');
 
-    // Clear any previous selection state
-    choices.querySelectorAll('.answer-option')
-           .forEach(btn => btn.classList.remove('selected'));
+  // reset any previously highlighted choice (e.g. if player replays)
+  choices.querySelectorAll('.answer-option')
+    .forEach(btn => btn.classList.remove('selected'));
 }
 
 function selectAnswer(memId, choiceIdx) {
-    const mem    = activeMemory;
-    const choice = mem.choices[choiceIdx];
+  const mem = activeMemory;
+  const choice = mem.choices[choiceIdx];
 
-    // Record the answer
-    playerAnswers[memId] = choice.type;
+  // save what the player picked for this object
+  playerAnswers[memId] = choice.type;
 
-    // Visual: highlight selected option
-    const choices = document.getElementById(`choices-${memId}`);
-    choices.querySelectorAll('.answer-option').forEach((btn, i) => {
-        if (i === choiceIdx) btn.classList.add('selected');
-    });
+  // highlight the chosen option
+  const choices = document.getElementById(`choices-${memId}`);
+  choices.querySelectorAll('.answer-option').forEach((btn, i) => {
+    if (i === choiceIdx) btn.classList.add('selected');
+  });
 
-    // Brief pause, then show investigator's response line
-    setTimeout(() => {
-        choices.classList.add('hidden');
-        memPhase = 'response';
-        const hint = document.getElementById(`hint-${mem.id}`);
-        hint.classList.remove('show');
-        document.getElementById(`speaker-${mem.id}`).textContent = 'INVESTIGATOR';
-        typeText(
-            document.getElementById(`text-${mem.id}`),
-            choice.response,
-            () => hint.classList.add('show')
-        );
-    }, 600);
+  // short pause, then hide choices and show the investigator's reply
+  setTimeout(() => {
+    choices.classList.add('hidden');
+    memPhase = 'response';
+    const hint = document.getElementById(`hint-${mem.id}`);
+    hint.classList.remove('show');
+    document.getElementById(`speaker-${mem.id}`).textContent = 'INVESTIGATOR';
+    typeText(
+      document.getElementById(`text-${mem.id}`),
+      choice.response,
+      () => hint.classList.add('show')
+    );
+  }, 600);
 }
 
-// Called when player clicks after response text finishes
+// called when player clicks after the investigator's response finishes
 function finishMemory() {
-    const mem = activeMemory;
+  const mem = activeMemory;
 
-    // Hide portrait
-    const p = document.getElementById(`portrait-${mem.id}`);
-    if (p) p.classList.remove('visible');
+  // hide the portrait as we leave
+  const p = document.getElementById(`portrait-${mem.id}`);
+  if (p) p.classList.remove('visible');
 
-    activeMemory = null;
+  activeMemory = null;
 
-    // Mark as found
-    if (!foundEvidence.has(mem.id)) {
-        foundEvidence.add(mem.id);
-        updateEvidenceDot(mem.id);
-    }
+  // light up the evidence dot for this object
+  if (!foundEvidence.has(mem.id)) {
+    foundEvidence.add(mem.id);
+    updateEvidenceDot(mem.id);
+  }
 
-    // Advance to next object
-    objectIndex++;
-    transitionTo('investigation', () => {
-        promptForObject(objectIndex);
-    });
+  // move on to the next object
+  objectIndex++;
+  transitionTo('investigation', () => {
+    promptForObject(objectIndex);
+  });
 }
 
-// ═══════════════════════════════════════════════════
-// EVIDENCE DOTS
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// evidence dots — the row of small circles in the top bar
+// ─────────────────────────────────────────────────────────────
 
 function buildEvidenceDots() {
-    const tracker = document.getElementById('evidenceTracker');
-    tracker.innerHTML = '';
-    STORY.memoryOrder.forEach(uid => {
-        const mem = STORY.memories[uid];
-        const dot = document.createElement('div');
-        dot.className = 'evidence-dot';
-        dot.id = `dot-${mem.id}`;
-        dot.title = mem.objectName;
-        tracker.appendChild(dot);
-    });
+  const tracker = document.getElementById('evidenceTracker');
+  tracker.innerHTML = '';
+  STORY.memoryOrder.forEach(uid => {
+    const mem = STORY.memories[uid];
+    const dot = document.createElement('div');
+    dot.className = 'evidence-dot';
+    dot.id = `dot-${mem.id}`;
+    dot.title = mem.objectName;
+    tracker.appendChild(dot);
+  });
 }
 
 function updateEvidenceDot(memId) {
-    const dot = document.getElementById(`dot-${memId}`);
-    if (dot) dot.classList.add('found');
+  const dot = document.getElementById(`dot-${memId}`);
+  if (dot) dot.classList.add('found');
 }
 
-// ═══════════════════════════════════════════════════
-// ENDINGS — lines type out one by one, auto-advancing
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// endings — lines type out one by one automatically with pauses
+// ─────────────────────────────────────────────────────────────
 
-let endingType      = null;
+let endingType = null;
 let endingLineIndex = 0;
-let endingTimer     = null;
+let endingTimer = null;
 
 function chooseEnding(type) {
-    endingType      = type;
-    endingLineIndex = 0;
-    transitionTo(`ending-${type}`, () => playEnding(type));
+  endingType = type;
+  endingLineIndex = 0;
+  transitionTo(`ending-${type}`, () => playEnding(type));
 }
 
 function playEnding(type) {
-    const ending  = STORY.endings[type];
-    const titleEl = document.getElementById(`ending-title-${type}`);
-    const linesEl = document.getElementById(`ending-lines-${type}`);
-    const btnEl   = document.getElementById(`ending-btn-${type}`);
+  const ending = STORY.endings[type];
+  const titleEl = document.getElementById(`ending-title-${type}`);
+  const linesEl = document.getElementById(`ending-lines-${type}`);
+  const btnEl = document.getElementById(`ending-btn-${type}`);
 
-    titleEl.textContent = ending.title;
-    linesEl.innerHTML   = '';
-    btnEl.classList.add('hidden');
+  titleEl.textContent = ending.title;
+  linesEl.innerHTML = '';
+  btnEl.classList.add('hidden');
 
-    endingLineIndex = 0;
-    showEndingLine(type);
+  endingLineIndex = 0;
+  showEndingLine(type);
 }
 
 function showEndingLine(type) {
-    const ending  = STORY.endings[type];
-    const linesEl = document.getElementById(`ending-lines-${type}`);
-    const btnEl   = document.getElementById(`ending-btn-${type}`);
+  const ending = STORY.endings[type];
+  const linesEl = document.getElementById(`ending-lines-${type}`);
+  const btnEl = document.getElementById(`ending-btn-${type}`);
 
-    if (endingLineIndex >= ending.lines.length) {
-        // All lines shown — reveal restart button
-        setTimeout(() => btnEl.classList.remove('hidden'), 600);
-        return;
-    }
+  if (endingLineIndex >= ending.lines.length) {
+    // all lines done — show the "Begin Again" button
+    setTimeout(() => btnEl.classList.remove('hidden'), 600);
+    return;
+  }
 
-    // Create a new line element that starts invisible
-    const lineEl = document.createElement('div');
-    lineEl.className = 'ending-line';
-    linesEl.appendChild(lineEl);
+  // add a new line div and type it in
+  const lineEl = document.createElement('div');
+  lineEl.className = 'ending-line';
+  linesEl.appendChild(lineEl);
 
-    typeText(lineEl, ending.lines[endingLineIndex], () => {
-        endingLineIndex++;
-        // Pause between lines — longer at blank-feeling gaps
-        const pause = endingLineIndex % 3 === 0 ? 1400 : 900;
-        endingTimer = setTimeout(() => showEndingLine(type), pause);
-    });
+  typeText(lineEl, ending.lines[endingLineIndex], () => {
+    endingLineIndex++;
+    // slightly longer pause every 3 lines for a natural breathing room
+    const pause = endingLineIndex % 3 === 0 ? 1400 : 900;
+    endingTimer = setTimeout(() => showEndingLine(type), pause);
+  });
 }
 
 function restartGame() {
-    preludeIndex     = 0;
-    hasPlayedOpening = false;
-    objectIndex      = 0;
-    expectedUID      = null;
-    invPhase         = 'idle';
-    invQueueActive   = false;
-    activeMemory     = null;
-    foundEvidence    = new Set();
-    playerAnswers    = {};
-    buildEvidenceDots();
-    transitionTo('intro');
+  preludeIndex = 0;
+  hasPlayedOpening = false;
+  objectIndex = 0;
+  expectedUID = null;
+  invPhase = 'idle';
+  invQueueActive = false;
+  activeMemory = null;
+  foundEvidence = new Set();
+  playerAnswers = {};
+  buildEvidenceDots();
+  transitionTo('intro');
 }
 
-// ═══════════════════════════════════════════════════
-// KEYBOARD
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// keyboard — space/enter advances dialogue anywhere in the game
+// ─────────────────────────────────────────────────────────────
 
 document.addEventListener('keydown', e => {
-    if (e.code !== 'Space' && e.code !== 'Enter') return;
-    e.preventDefault();
+  if (e.code !== 'Space' && e.code !== 'Enter') return;
+  e.preventDefault();
 
-    if (currentScene === 'investigation' && invPhase === 'dialogue') {
-        advanceInvDialogue();
-    } else if (currentScene.startsWith('memory-')) {
-        if (memPhase === 'memory' || memPhase === 'question') {
-            advanceMemory();
-        } else if (memPhase === 'response' && typingDone) {
-            finishMemory();
-        }
+  if (currentScene === 'investigation' && invPhase === 'dialogue') {
+    advanceInvDialogue();
+  } else if (currentScene.startsWith('memory-')) {
+    if (memPhase === 'memory' || memPhase === 'question') {
+      advanceMemory();
+    } else if (memPhase === 'response' && typingDone) {
+      finishMemory();
     }
+  }
 });
 
-// Click on investigation dialogue panel advances it
+// clicking the dialogue panel in the white room also advances it
 document.getElementById('invPanel').addEventListener('click', () => {
-    if (currentScene === 'investigation' && invPhase === 'dialogue') {
-        advanceInvDialogue();
-    }
+  if (currentScene === 'investigation' && invPhase === 'dialogue') {
+    advanceInvDialogue();
+  }
 });
 
-// ═══════════════════════════════════════════════════
-// SOCKET.IO — optional (works without server)
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// socket.io — connects to the node server when it's running
+// if the server isn't running, we just skip this and use dev mode
+// ─────────────────────────────────────────────────────────────
 
 const connDot = document.getElementById('connDot');
 const connTxt = document.getElementById('connText');
 
 if (typeof io !== 'undefined') {
-    try {
-        const socket = io();
-        socket.on('connect',    () => { connDot.classList.add('on');    connTxt.textContent = 'connected'; });
-        socket.on('disconnect', () => { connDot.classList.remove('on'); connTxt.textContent = 'offline';   });
-        socket.on('show_info',  data => triggerNFC(data.uid));
-    } catch(e) {
-        console.log('Socket.io failed — click mode active.');
-    }
+  try {
+    const socket = io();
+    socket.on('connect', () => { connDot.classList.add('on'); connTxt.textContent = 'connected'; });
+    socket.on('disconnect', () => { connDot.classList.remove('on'); connTxt.textContent = 'offline'; });
+    socket.on('show_info', data => triggerNFC(data.uid));
+  } catch (e) {
+    console.log('Socket.io failed — click mode active.');
+  }
 }
 
-// ═══════════════════════════════════════════════════
-// START
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// go!
+// ─────────────────────────────────────────────────────────────
 
 init();
