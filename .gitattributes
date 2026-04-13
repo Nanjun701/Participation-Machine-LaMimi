@@ -1,0 +1,11 @@
+# Store large image and media files with Git LFS
+# Install Git LFS once with: git lfs install
+# Then push normally — large files go to LFS automatically
+
+Scene/**/*.jpg  filter=lfs diff=lfs merge=lfs -text
+Scene/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+Scene/**/*.png  filter=lfs diff=lfs merge=lfs -text
+Scene/**/*.webp filter=lfs diff=lfs merge=lfs -text
+Scene/**/*.gif  filter=lfs diff=lfs merge=lfs -text
+Scene/**/*.mp4  filter=lfs diff=lfs merge=lfs -text
+Scene/**/*.mov  filter=lfs diff=lfs merge=lfs -text
