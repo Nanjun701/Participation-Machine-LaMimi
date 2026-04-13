@@ -129,7 +129,7 @@ body {
 /* ── 02 · PRELUDE — the 3 intro pages before the game starts ── */
 #scene-prelude .scene-bg {
     background-color: #0a0906;
-    background-image: url('Scene/Intro/Intro1.png');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/Intro1.jpeg');
     filter: brightness(0.3) saturate(0.5);
 }
 
