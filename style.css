@@ -192,7 +192,7 @@ body {
 /* ── 03 · WHITE ROOM — where the investigator talks and you scan objects ── */
 #scene-investigation .scene-bg {
     background-color: #d8d4ce;
-    background-image: url('Scene/Home/p1.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/p1.jpeg');
     filter: brightness(0.55) saturate(0.4);
 }
 
@@ -497,26 +497,26 @@ body {
 #scene-memory-1 .scene-bg,
 #scene-memory-3 .scene-bg {
     background-color: #1a1208;
-    background-image: url('Scene/Cafe/Cafe1.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/Cafe1.jpeg');
 }
 
 #scene-memory-2 .scene-bg,
 #scene-memory-5 .scene-bg {
     background-color: #14100a;
-    background-image: url('Scene/Cafe/cafe2.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/cafe2.jpeg');
 }
 
 #scene-memory-4 .scene-bg,
 #scene-memory-6 .scene-bg {
     background-color: #0a0e14;
-    background-image: url('Scene/Home/p2.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/p2.jpeg');
     filter: brightness(0.35) saturate(0.5);
 }
 
 /* ── 05 · CHOICE — the final decision after all 6 objects are scanned ── */
 #scene-choice .scene-bg {
     background-color: #060606;
-    background-image: url('Scene/Home/p1.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/p1.jpeg');
     filter: brightness(0.2) saturate(0.25);
 }
 
@@ -596,12 +596,12 @@ body {
 
 /* ── 06 · ENDINGS — comply (A) and resist (B) ── */
 #scene-ending-comply .scene-bg {
-    background-image: url('Scene/Home/p1.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/p1.jpeg');
     filter: brightness(0.2) saturate(0.18);
 }
 
 #scene-ending-resist .scene-bg {
-    background-image: url('Scene/Home/p2.jpeg');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/p2.jpeg');
     filter: brightness(0.2) saturate(0.25) hue-rotate(20deg);
 }
 
