@@ -51,7 +51,7 @@ body {
 /* ── 01 · INTRO — the title card ── */
 #scene-intro .scene-bg {
     background-color: #0e0c0a;
-    background-image: url('Scene/Intro/Intro1.png');
+    background-image: url('https://res.cloudinary.com/dilcfjytt/image/upload/Intro1.jpeg');
     filter: brightness(0.5);
 }
 
