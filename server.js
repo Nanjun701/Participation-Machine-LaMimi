@@ -5,6 +5,7 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+// const port = new SerialPort({ path: '/dev/cu.usbmodem1401', baudRate: 9600 });
 const port = new SerialPort({ path: '/dev/cu.usbmodem1401', baudRate: 9600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
